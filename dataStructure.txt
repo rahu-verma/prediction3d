@@ -1,0 +1,293 @@
+/*
+Data structure:
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO my_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO my_user;
+
+ALTER TABLE hm_breakdown_revenue ADD other_type FLOAT NOT NULL AFTER net60_type;
+
+
+Dashboard page:-
+Unit based per day Revenue table: Done
+
+CREATE TABLE IF NOT EXISTS hm_unit_revenue (
+ID SERIAL NOT NULL,
+domain VARCHAR(256) NOT NULL,
+unit VARCHAR(256) NOT NULL,
+llr INTEGER NOT NULL,
+ctr DOUBLE PRECISION NOT NULL,
+vcpm DOUBLE PRECISION NOT NULL,
+avt DOUBLE PRECISION NOT NULL,
+viewability FLOAT NOT NULL,
+admin_vcpm DOUBLE PRECISION NOT NULL,
+ad_fees FLOAT NOT NULL,
+publisher_revenue FLOAT NOT NULL,
+net60_revenue FLOAT NOT NULL,
+admin_revenue FLOAT NOT NULL,
+report_type VARCHAR(32) NOT NULL,
+date_time DATE NOT NULL,
+original_document_id VARCHAR(256),
+PRIMARY KEY (id),
+UNIQUE(original_document_id)
+);
+
+ALTER TABLE hm_unit_revenue ADD CONSTRAINT modified_unit_table UNIQUE (original_document_id);
+
+
+Admin Chart + Client Chart: Done
+
+***Derived from Unit based per day Revenue table***
+
+CREATE TABLE IF NOT EXISTS hm_chart (
+ID SERIAL NOT NULL,
+domain VARCHAR(256) NOT NULL,
+month_year DATE NOT NULL,
+admin_revenue FLOAT NOT NULL,
+publisher_revenue FLOAT NOT NULL,
+PRIMARY KEY (ID),
+UNIQUE(domain, month_year)
+);
+
+
+Admin Revenue table: Done
+
+***Derived from Unit based per day Revenue table***
+
+CREATE TABLE IF NOT EXISTS hm_domain_revenue (
+ID SERIAL NOT NULL,
+domain VARCHAR(256) NOT NULL,
+llr INTEGER NOT NULL,
+ctr DOUBLE PRECISION NOT NULL,
+vcpm DOUBLE PRECISION NOT NULL,
+avt DOUBLE PRECISION NOT NULL,
+viewability FLOAT NOT NULL,
+admin_vcpm DOUBLE PRECISION NOT NULL,
+ad_fees FLOAT NOT NULL,
+publisher_revenue FLOAT NOT NULL,
+net60_revenue FLOAT NOT NULL,
+admin_revenue FLOAT NOT NULL,
+date_time DATE NOT NULL,
+PRIMARY KEY (id),
+UNIQUE(domain, date_time)
+);
+
+
+Admin Ad network based revenue table: Working
+
+CREATE TABLE IF NOT EXISTS hm_report_revenue (
+ID SERIAL NOT NULL,
+domain VARCHAR(256) NOT NULL,
+report_type VARCHAR(256) NOT NULL,
+llr INTEGER NOT NULL,
+ctr DOUBLE PRECISION NOT NULL,
+vcpm DOUBLE PRECISION NOT NULL,
+avt DOUBLE PRECISION NOT NULL,
+viewability FLOAT NOT NULL,
+ad_fees FLOAT NOT NULL,
+publisher_revenue FLOAT NOT NULL,
+net60_revenue FLOAT NOT NULL,
+admin_revenue FLOAT NOT NULL,
+date_time DATE NOT NULL,
+PRIMARY KEY (id),
+UNIQUE(domain, report_type, date_time)
+);
+
+
+Breakdown page:-
+Admin Domain based revenue table
+
+***Derived from Admin Ad network based revenue table***
+
+CREATE TABLE IF NOT EXISTS hm_breakdown_revenue (
+ID SERIAL NOT NULL,
+domain VARCHAR(256) NOT NULL,
+pubg_type FLOAT NULL,
+adipolo_type FLOAT NULL,
+hmadx1_type FLOAT NULL,
+hmadx2_type FLOAT NULL,
+revcontent_type FLOAT NULL,
+prebid_type FLOAT NULL,
+gam_type FLOAT NULL,
+net60_type FLOAT NOT NULL,
+other_type FLOAT NOT NULL,
+ad_fees FLOAT NOT NULL,
+publisher_revenue FLOAT NOT NULL,
+admin_revenue FLOAT NOT NULL,
+date_time DATE NOT NULL,
+PRIMARY KEY (id),
+UNIQUE(domain, date_time)
+);
+
+*/
+
+
+
+
+/*
+Aggregation script from mysql dump
+{
+  domain: "$domain",
+  unit: "$unit",
+  llr: {
+    $convert:
+    {
+      input: "$llr",
+      to: "int"
+    }
+  },
+  ctr: {
+    $convert:
+    {
+      input: "$ctr",
+      to: "decimal"
+    }
+  },
+  vcpm: {
+    $convert:
+    {
+      input: "$vcpm",
+      to: "decimal"
+    }
+  },
+  earning: {
+    $convert:
+    {
+      input: "$earning",
+      to: "double"
+    }
+  },
+  avt: {
+    $convert:
+    {
+      input: "$avt",
+      to: "decimal"
+    }
+  },
+  viewability: {
+    $convert:
+    {
+      input: "$viewability",
+      to: "decimal"
+    }
+  },
+  gam_type: {
+    $switch: {
+      branches: [
+        { case: { $eq: [ "$gam_type", "1" ] },
+          then: true
+        },
+        { case: { $eq: [ "$gam_type", "0" ] },
+          then: false
+        }
+      ],
+      default: ""
+    }
+  },
+  pubg_type: {
+    $switch: {
+      branches: [
+        { case: { $eq: [ "$pubg_type", "1" ] },
+          then: true
+        },
+        { case: { $eq: [ "$pubg_type", "0" ] },
+          then: false
+        }
+      ],
+      default: ""
+    }
+  },
+  net60_type: {
+    $switch: {
+      branches: [
+        { case: { $eq: [ "$net60_type", "1" ] },
+          then: true
+        },
+        { case: { $eq: [ "$net60_type", "0" ] },
+          then: false
+        }
+      ],
+      default: ""
+    }
+  },
+  prebid_type: {
+    $switch: {
+      branches: [
+        { case: { $eq: [ "$prebid_type", "1" ] },
+          then: true
+        },
+        { case: { $eq: [ "$prebid_type", "0" ] },
+          then: false
+        }
+      ],
+      default: ""
+    }
+  },
+  revcontent_type: {
+    $switch: {
+      branches: [
+        { case: { $eq: [ "$revcontent_type", "1" ] },
+          then: true
+        },
+        { case: { $eq: [ "$revcontent_type", "0" ] },
+          then: false
+        }
+      ],
+      default: ""
+    }
+  },
+  hmadx1_type: {
+    $switch: {
+      branches: [
+        { case: { $eq: [ "$hmadx1_type", "1" ] },
+          then: true
+        },
+        { case: { $eq: [ "$hmadx1_type", "0" ] },
+          then: false
+        }
+      ],
+      default: ""
+    }
+  },
+  hmadx2_type: {
+    $switch: {
+      branches: [
+        { case: { $eq: [ "$hmadx2_type", "1" ] },
+          then: true
+        },
+        { case: { $eq: [ "$hmadx2_type", "0" ] },
+          then: false
+        }
+      ],
+      default: ""
+    }
+  },
+  date_time: {
+    $convert:
+    {
+      input: "$date_time",
+      to: "date"
+    }
+  }
+}
+*/
+
+
+/*
+Aggregation script for admin reports from mysql dump
+{
+  domain: "$domain",
+  unit: "$unit",
+  llr: {
+    $convert: {
+      input: "$llr",
+      to: "int"
+    }
+  },
+  date_time: {
+    $convert: {
+      input: "$date_time",
+      to: "date"
+    }
+  }
+}
+*/

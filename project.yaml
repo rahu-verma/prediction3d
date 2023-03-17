@@ -1,0 +1,30 @@
+databases:
+- cluster_name: central-data-repo
+  engine: MONGODB
+  name: central-data-repo
+  production: true
+  version: "5"
+name: hooliganmedia-data-store
+region: nyc
+services:
+- build_command: npm start
+  environment_slug: node-js
+  envs:
+  - key: DATABASE_URL
+    scope: RUN_TIME
+    value: ${central-data-repo.DATABASE_URL}
+  - key: CA_CERT
+    scope: RUN_TIME
+    value: ${central-data-repo.CA_CERT}
+  github:
+    branch: main
+    deploy_on_push: true
+    repo: nirjharlo/hooliganmedia-data-store
+  http_port: 8080
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  name: hooliganmedia-data-store
+  routes:
+  - path: /
+  run_command: npm start
+  source_dir: /
